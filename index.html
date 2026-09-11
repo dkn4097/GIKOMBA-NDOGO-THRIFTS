@@ -824,15 +824,60 @@
   }
 
   /* =========================================================
-     STUDIO MODE — admin photo uploads, persisted via
-     window.storage so every visitor sees the same photos.
+     STUDIO MODE — admin photo uploads.
+     Uses Claude's shared window.storage when this page runs
+     inside a Claude Artifact preview (photos sync to every
+     visitor). Falls back to this browser's own localStorage
+     when the file is opened directly or hosted elsewhere
+     (photos then persist only on this device/browser).
      ========================================================= */
   var STUDIO_PIN = '2026';
   var studioBar = document.getElementById('studioBar');
   var studioOpen = document.getElementById('studioOpen');
   var studioExit = document.getElementById('studioExit');
   var studioReset = document.getElementById('studioReset');
-  var hasStorage = !!(window.storage && typeof window.storage.set === 'function');
+
+  var storageBackend = (function(){
+    if (window.storage && typeof window.storage.set === 'function'){
+      return {
+        ok: true, shared: true,
+        get: function(key){ return window.storage.get(key, true); },
+        set: function(key, value){ return window.storage.set(key, value, true); },
+        del: function(key){ return window.storage.delete(key, true); }
+      };
+    }
+    try {
+      var probe = '__frawood_probe__';
+      window.localStorage.setItem(probe, '1');
+      window.localStorage.removeItem(probe);
+    } catch (e){
+      return { ok: false, shared: false };
+    }
+    var PREFIX = 'frawood:';
+    return {
+      ok: true, shared: false,
+      get: function(key){
+        return new Promise(function(resolve, reject){
+          var v = window.localStorage.getItem(PREFIX + key);
+          if (v === null){ reject(new Error('not set')); return; }
+          resolve({ key: key, value: v });
+        });
+      },
+      set: function(key, value){
+        return new Promise(function(resolve, reject){
+          try { window.localStorage.setItem(PREFIX + key, value); resolve({ key: key, value: value }); }
+          catch (e){ reject(e); }
+        });
+      },
+      del: function(key){
+        return new Promise(function(resolve){
+          window.localStorage.removeItem(PREFIX + key);
+          resolve({ key: key, deleted: true });
+        });
+      }
+    };
+  })();
+  var hasStorage = storageBackend.ok;
 
   function setStudioMode(on){
     document.body.classList.toggle('studio-mode', on);
@@ -841,14 +886,16 @@
 
   studioOpen.addEventListener('click', function(){
     if (!hasStorage){
-      showToast('Photo storage is not available in this preview.');
+      showToast('This browser is blocking local storage (try leaving private/incognito mode).');
       return;
     }
     var pin = window.prompt('Enter the studio PIN to edit photos:');
     if (pin === null) return;
     if (pin.trim() === STUDIO_PIN){
       setStudioMode(true);
-      showToast('Studio mode on — click any photo to replace it.');
+      showToast(storageBackend.shared
+        ? 'Studio mode on — click any photo to replace it.'
+        : 'Studio mode on — photos save to this browser only.');
     } else {
       showToast('That PIN did not match.');
     }
@@ -912,12 +959,12 @@
     }
     readFileAsDataUrl(file).then(function(dataUrl){
       applyImage(key, dataUrl);
-      return window.storage.set(key, dataUrl, true);
+      return storageBackend.set(key, dataUrl);
     }).then(function(result){
       if (!result){ showToast('Could not save that photo — try again.'); return; }
-      showToast('Photo saved for every visitor.');
+      showToast(storageBackend.shared ? 'Photo saved for every visitor.' : 'Photo saved to this browser.');
     }).catch(function(){
-      showToast('Something went wrong saving that photo.');
+      showToast('Something went wrong saving that photo — the image may be too large.');
     });
     input.value = '';
   });
@@ -929,7 +976,7 @@
     keys.forEach(function(el){
       var key = el.dataset.imgKey;
       clearImage(key);
-      jobs.push(window.storage.delete(key, true).catch(function(){}));
+      jobs.push(storageBackend.del(key).catch(function(){}));
     });
     Promise.all(jobs).then(function(){ showToast('Photos reset to default artwork.'); });
   });
@@ -940,7 +987,7 @@
     var keys = [];
     document.querySelectorAll('[data-img-key]').forEach(function(el){ keys.push(el.dataset.imgKey); });
     keys.forEach(function(key){
-      window.storage.get(key, true).then(function(result){
+      storageBackend.get(key).then(function(result){
         if (result && result.value) applyImage(key, result.value);
       }).catch(function(){ /* no saved photo for this spot yet */ });
     });
