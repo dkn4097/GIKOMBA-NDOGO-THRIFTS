@@ -20,6 +20,7 @@
     --stone:#8B8272;
     --line: rgba(34,31,26,0.14);
     --line-strong: rgba(34,31,26,0.28);
+    --ease: cubic-bezier(0.2,0.7,0.2,1);
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   html{scroll-behavior:smooth;}
@@ -31,6 +32,7 @@
     -webkit-font-smoothing:antialiased;
     overflow-x:hidden;
   }
+  body.no-scroll{ overflow:hidden; }
   h1,h2,h3,.serif{ font-family:'Fraunces', serif; font-weight:400; letter-spacing:-0.01em; }
   a{ color:inherit; text-decoration:none; }
   img,svg{ display:block; max-width:100%; }
@@ -45,7 +47,7 @@
 
   /* ---------- NAV ---------- */
   header{
-    position:fixed; top:0; left:0; right:0; z-index:100;
+    position:fixed; top:0; left:0; right:0; z-index:200;
     padding:26px 0;
     transition:background 0.4s ease, padding 0.4s ease, border-color 0.4s ease;
     border-bottom:1px solid transparent;
@@ -67,48 +69,59 @@
   }
   nav.primary a:hover::after{ width:100%; }
   .nav-icons{ display:flex; align-items:center; gap:22px; }
-  .nav-icons button{ position:relative; }
+  .nav-icons button{ position:relative; transition:transform 0.2s ease; }
+  .nav-icons button:hover{ transform:translateY(-1px); }
   .bag-count{
     position:absolute; top:-8px; right:-10px; background:var(--walnut); color:var(--bone);
     font-size:10px; width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    transition:transform 0.25s var(--ease);
   }
-  .menu-toggle{ display:none; }
+  .bag-count.bump{ transform:scale(1.35); }
+
+  .menu-toggle{
+    display:none; flex-direction:column; gap:5px; width:26px; padding:4px 0;
+  }
+  .menu-toggle span{ display:block; height:1.5px; background:var(--ink); transition:transform 0.3s ease, opacity 0.3s ease; }
+  .menu-toggle.open span:nth-child(1){ transform:translateY(6.5px) rotate(45deg); }
+  .menu-toggle.open span:nth-child(2){ opacity:0; }
+  .menu-toggle.open span:nth-child(3){ transform:translateY(-6.5px) rotate(-45deg); }
+
+  .mobile-nav{
+    position:fixed; inset:0; z-index:150; background:var(--bone);
+    display:flex; flex-direction:column; justify-content:center; padding:0 40px;
+    transform:translateX(100%); transition:transform 0.45s var(--ease);
+  }
+  .mobile-nav.open{ transform:translateX(0); }
+  .mobile-nav a{ font-family:'Fraunces', serif; font-size:34px; padding:14px 0; border-bottom:1px solid var(--line); }
 
   /* ---------- HERO ---------- */
-  .hero{
-    padding:170px 0 0;
-    position:relative;
-  }
-  .hero-grid{
-    display:grid; grid-template-columns:1.1fr 0.9fr; gap:60px; align-items:center;
-  }
+  .hero{ padding:170px 0 0; position:relative; }
+  .hero-grid{ display:grid; grid-template-columns:1.1fr 0.9fr; gap:60px; align-items:center; }
   .hero-eyebrow{ font-size:14px; color:var(--stone); margin-bottom:22px; }
   .hero h1{
-    font-size:clamp(40px, 5.4vw, 74px);
-    line-height:1.04;
-    max-width:640px;
+    font-size:clamp(40px, 5.4vw, 74px); line-height:1.04; max-width:640px;
     opacity:0; transform:translateY(18px);
-    animation:riseIn 0.9s cubic-bezier(0.2,0.7,0.2,1) 0.15s forwards;
+    animation:riseIn 0.9s var(--ease) 0.15s forwards;
   }
   .hero p.lede{
     margin-top:26px; font-size:17px; line-height:1.65; color:#463f34; max-width:440px;
     opacity:0; transform:translateY(14px);
-    animation:riseIn 0.9s cubic-bezier(0.2,0.7,0.2,1) 0.35s forwards;
+    animation:riseIn 0.9s var(--ease) 0.35s forwards;
   }
   .hero-ctas{
     margin-top:38px; display:flex; gap:16px; flex-wrap:wrap;
     opacity:0; transform:translateY(14px);
-    animation:riseIn 0.9s cubic-bezier(0.2,0.7,0.2,1) 0.5s forwards;
+    animation:riseIn 0.9s var(--ease) 0.5s forwards;
   }
   @keyframes riseIn{ to{ opacity:1; transform:translateY(0); } }
   .btn{
     display:inline-flex; align-items:center; gap:10px; padding:15px 28px; font-size:14.5px; border-radius:2px;
-    transition:transform 0.25s ease, background 0.25s ease, color 0.25s ease;
+    transition:transform 0.25s ease, background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
   }
   .btn-solid{ background:var(--ink); color:var(--bone); }
-  .btn-solid:hover{ background:var(--walnut-deep); }
+  .btn-solid:hover{ background:var(--walnut-deep); transform:translateY(-2px); }
   .btn-outline{ border:1px solid var(--line-strong); }
-  .btn-outline:hover{ border-color:var(--ink); }
+  .btn-outline:hover{ border-color:var(--ink); transform:translateY(-2px); }
 
   .hero-visual{
     position:relative; aspect-ratio:4/5; border-radius:2px; overflow:hidden;
@@ -116,8 +129,12 @@
       radial-gradient(circle at 30% 20%, rgba(255,255,255,0.10), transparent 45%),
       repeating-linear-gradient(100deg, rgba(0,0,0,0.05) 0px, rgba(0,0,0,0.05) 2px, transparent 2px, transparent 7px),
       linear-gradient(160deg, #7A5A3F 0%, #5C4028 55%, #3E2A1B 100%);
+    opacity:0; transform:scale(1.04);
+    animation:heroReveal 1.1s var(--ease) 0.2s forwards;
   }
-  .hero-visual svg{ position:absolute; inset:0; width:100%; height:100%; }
+  @keyframes heroReveal{ to{ opacity:1; transform:scale(1); } }
+  .hero-visual svg{ position:absolute; inset:0; width:100%; height:100%; transition:opacity 0.6s ease; }
+  .hero-visual img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
 
   .material-strip{
     border-top:1px solid var(--line); border-bottom:1px solid var(--line);
@@ -132,17 +149,31 @@
   .section-head h2{ font-size:clamp(28px,3.4vw,42px); max-width:520px; }
   .section-head p{ color:var(--stone); font-size:15px; max-width:340px; line-height:1.6; }
 
+  /* scroll reveal */
+  .reveal{ opacity:0; transform:translateY(24px); transition:opacity 0.7s var(--ease), transform 0.7s var(--ease); }
+  .reveal.in{ opacity:1; transform:translateY(0); }
+  .reveal-stagger.in > *{ transition-delay:calc(var(--i, 0) * 70ms); }
+
   /* ---------- CATEGORIES ---------- */
   .cat-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); }
   .cat-card{
-    background:var(--linen); padding:38px 26px; display:flex; flex-direction:column; gap:34px; justify-content:space-between;
-    min-height:190px; transition:background 0.3s ease;
+    position:relative; background:var(--linen); padding:38px 26px; display:flex; flex-direction:column; gap:34px; justify-content:space-between;
+    min-height:190px; overflow:hidden;
   }
+  .cat-card .cat-bg{ position:absolute; inset:0; background-size:cover; background-position:center; opacity:0; transition:opacity 0.4s ease, transform 0.5s ease; transform:scale(1.06); }
+  .cat-card.has-photo .cat-bg{ opacity:1; }
+  .cat-card.has-photo::after{ content:''; position:absolute; inset:0; background:linear-gradient(180deg, rgba(34,31,26,0.05), rgba(34,31,26,0.55)); }
+  .cat-card.has-photo{ color:var(--bone); }
+  .cat-card.has-photo .glyph svg{ stroke:var(--bone); }
+  .cat-card.has-photo .arrow{ color:rgba(248,244,236,0.8); }
+  .cat-card > *{ position:relative; z-index:1; }
   .cat-card:hover{ background:var(--bone); }
+  .cat-card:hover .cat-bg{ transform:scale(1.12); }
   .cat-card .glyph{ width:34px; height:34px; }
-  .cat-card .glyph svg{ width:100%; height:100%; stroke:var(--walnut-deep); }
+  .cat-card .glyph svg{ width:100%; height:100%; stroke:var(--walnut-deep); transition:stroke 0.3s ease; }
   .cat-card h3{ font-size:19px; font-weight:400; }
-  .cat-card .arrow{ font-size:13px; color:var(--stone); display:flex; align-items:center; gap:6px; }
+  .cat-card .arrow{ font-size:13px; color:var(--stone); display:flex; align-items:center; gap:6px; transition:gap 0.2s ease; }
+  .cat-card:hover .arrow{ gap:10px; }
 
   /* ---------- PRODUCTS ---------- */
   .prod-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:28px; }
@@ -151,18 +182,20 @@
     position:relative; aspect-ratio:3/4; border-radius:2px; overflow:hidden; margin-bottom:16px;
     background:linear-gradient(150deg,#D9CDB6,#C4B79C);
   }
-  .prod-media svg{ position:absolute; inset:0; width:100%; height:100%; }
-  .badge{ position:absolute; top:12px; left:12px; background:var(--moss); color:var(--bone); font-size:11.5px; padding:5px 10px; border-radius:2px; }
+  .prod-media svg{ position:absolute; inset:0; width:100%; height:100%; transition:opacity 0.4s ease; }
+  .prod-media img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:transform 0.5s ease; }
+  .prod-card:hover .prod-media img{ transform:scale(1.05); }
+  .badge{ position:absolute; top:12px; left:12px; background:var(--moss); color:var(--bone); font-size:11.5px; padding:5px 10px; border-radius:2px; z-index:2; }
   .wish{
-    position:absolute; top:10px; right:10px; width:34px; height:34px; border-radius:50%;
+    position:absolute; top:10px; right:10px; width:34px; height:34px; border-radius:50%; z-index:2;
     background:rgba(248,244,236,0.9); display:flex; align-items:center; justify-content:center;
     opacity:0; transform:translateY(-6px); transition:opacity 0.25s ease, transform 0.25s ease;
   }
   .prod-card:hover .wish{ opacity:1; transform:translateY(0); }
   .wish.active svg{ fill:var(--walnut); stroke:var(--walnut); }
   .quick-view{
-    position:absolute; left:12px; right:12px; bottom:12px; background:rgba(34,31,26,0.88); color:var(--bone);
-    text-align:center; padding:12px; font-size:13px; border-radius:2px;
+    position:absolute; left:12px; right:12px; bottom:12px; background:rgba(34,31,26,0.88); color:var(--bone); z-index:2;
+    text-align:center; padding:12px; font-size:13px; border-radius:2px; cursor:pointer;
     opacity:0; transform:translateY(8px); transition:opacity 0.25s ease, transform 0.25s ease;
   }
   .prod-card:hover .quick-view{ opacity:1; transform:translateY(0); }
@@ -178,6 +211,7 @@
     transition:background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
   }
   .add-cart:hover{ background:var(--ink); color:var(--bone); border-color:var(--ink); }
+  .add-cart.added{ background:var(--moss-deep); color:var(--bone); border-color:var(--moss-deep); }
 
   /* ---------- ABOUT ---------- */
   .about{ background:var(--bone); }
@@ -188,11 +222,11 @@
       repeating-linear-gradient(95deg, rgba(0,0,0,0.05) 0 2px, transparent 2px 8px),
       linear-gradient(200deg,#B99672,#8C6A48 60%,#5F432C);
   }
-  .about-panel svg{ position:absolute; inset:0; width:100%; height:100%; }
+  .about-panel svg{ position:absolute; inset:0; width:100%; height:100%; transition:opacity 0.4s ease; }
+  .about-panel img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
   .about h2{ font-size:clamp(28px,3.6vw,40px); max-width:460px; margin-bottom:20px; }
   .about p{ color:#463f34; font-size:15.5px; line-height:1.75; max-width:460px; margin-bottom:34px; }
   .stat-row{ display:flex; gap:48px; }
-  .stat{ }
   .stat .num{ font-family:'Fraunces', serif; font-size:34px; }
   .stat .label{ font-size:13px; color:var(--stone); margin-top:4px; }
 
@@ -205,24 +239,19 @@
   .info-list li{ font-size:14.5px; display:flex; gap:12px; }
   .info-list b{ color:var(--bone); font-weight:500; min-width:96px; display:inline-block; }
   .info-list span{ color:rgba(248,244,236,0.65); }
-  .showroom-visual{
-    aspect-ratio:4/3; position:relative; overflow:hidden;
-    background:linear-gradient(200deg,#3E2E20,#241A11);
-  }
-  .showroom-visual svg{ position:absolute; inset:0; width:100%; height:100%; }
+  .showroom-visual{ aspect-ratio:4/3; position:relative; overflow:hidden; background:linear-gradient(200deg,#3E2E20,#241A11); }
+  .showroom-visual svg{ position:absolute; inset:0; width:100%; height:100%; transition:opacity 0.4s ease; }
+  .showroom-visual img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
   .showroom .btn-outline{ border-color:rgba(248,244,236,0.35); }
   .showroom .btn-outline:hover{ border-color:var(--bone); }
 
   /* ---------- REVIEWS ---------- */
   .reviews-wrap{ max-width:720px; margin:0 auto; text-align:center; }
   .review-track{ position:relative; min-height:170px; }
-  .review-slide{
-    position:absolute; inset:0; opacity:0; transition:opacity 0.5s ease; display:flex; flex-direction:column; align-items:center; gap:22px;
-  }
+  .review-slide{ position:absolute; inset:0; opacity:0; transition:opacity 0.5s ease; display:flex; flex-direction:column; align-items:center; gap:22px; }
   .review-slide.active{ opacity:1; position:relative; }
   .review-slide p{ font-family:'Fraunces', serif; font-size:22px; line-height:1.5; font-weight:300; max-width:600px; }
-  .review-stars{ display:flex; gap:4px; }
-  .review-stars svg{ width:15px; height:15px; fill:var(--walnut); }
+  .review-stars{ display:flex; gap:4px; color:var(--walnut); font-size:14px; }
   .review-name{ font-size:13.5px; color:var(--stone); }
   .review-dots{ display:flex; justify-content:center; gap:10px; margin-top:30px; }
   .review-dots button{ width:7px; height:7px; border-radius:50%; background:var(--line-strong); transition:background 0.25s ease, transform 0.25s ease; }
@@ -233,14 +262,16 @@
   .news-inner{ max-width:560px; margin:0 auto; text-align:center; }
   .news-inner h2{ font-size:clamp(26px,3vw,36px); margin-bottom:14px; }
   .news-inner p{ color:var(--stone); font-size:15px; margin-bottom:32px; }
-  .news-form{ display:flex; gap:0; border-bottom:1px solid var(--ink); padding-bottom:10px; }
-  .news-form input{
-    flex:1; background:none; border:none; font-size:15px; font-family:inherit; color:var(--ink); padding:6px 0;
-  }
+  .news-form{ display:flex; gap:0; border-bottom:1px solid var(--ink); padding-bottom:10px; transition:border-color 0.2s ease; }
+  .news-form.error{ border-color:#A6432F; }
+  .news-form input{ flex:1; background:none; border:none; font-size:15px; font-family:inherit; color:var(--ink); padding:6px 0; }
   .news-form input::placeholder{ color:var(--stone); }
   .news-form input:focus{ outline:none; }
   .news-form button{ font-size:14px; display:flex; align-items:center; gap:8px; }
-  .news-note{ font-size:12px; color:var(--stone); margin-top:14px; }
+  .news-form button svg{ transition:transform 0.2s ease; }
+  .news-form button:hover svg{ transform:translateX(3px); }
+  .news-note{ font-size:12px; color:var(--stone); margin-top:14px; transition:color 0.2s ease; }
+  .news-note.error{ color:#A6432F; }
   .news-success{ display:none; font-size:14px; margin-top:16px; color:var(--moss-deep); }
 
   /* ---------- FOOTER ---------- */
@@ -253,9 +284,45 @@
   .footer-grid a{ font-size:14px; transition:color 0.2s ease; }
   .footer-grid a:hover{ color:var(--bone); }
   .footer-bottom{ display:flex; justify-content:space-between; align-items:center; padding:26px 0; font-size:12.5px; color:rgba(248,244,236,0.45); flex-wrap:wrap; gap:12px; }
-  .footer-bottom .socials{ display:flex; gap:18px; }
+  .footer-bottom .socials{ display:flex; gap:18px; align-items:center; }
+  .studio-link{ font-size:12.5px; color:rgba(248,244,236,0.4); border:1px solid rgba(248,244,236,0.2); padding:5px 12px; border-radius:20px; transition:border-color 0.2s ease, color 0.2s ease; }
+  .studio-link:hover{ border-color:rgba(248,244,236,0.5); color:rgba(248,244,236,0.8); }
 
   :focus-visible{ outline:2px solid var(--walnut); outline-offset:3px; }
+
+  /* ---------- ADMIN / STUDIO MODE ---------- */
+  .studio-bar{
+    position:fixed; left:0; right:0; bottom:0; z-index:300; background:var(--ink); color:var(--bone);
+    padding:14px 24px; display:none; align-items:center; justify-content:space-between; gap:16px;
+    transform:translateY(100%); transition:transform 0.4s var(--ease); flex-wrap:wrap;
+  }
+  .studio-bar.open{ display:flex; transform:translateY(0); }
+  .studio-bar .studio-msg{ font-size:13px; color:rgba(248,244,236,0.75); }
+  .studio-bar .studio-msg b{ color:var(--bone); font-weight:500; }
+  .studio-actions{ display:flex; gap:10px; }
+  .studio-actions button{ font-size:12.5px; padding:9px 16px; border:1px solid rgba(248,244,236,0.3); border-radius:2px; transition:background 0.2s ease, border-color 0.2s ease; }
+  .studio-actions button:hover{ border-color:var(--bone); }
+  .studio-actions .exit-btn{ background:var(--bone); color:var(--ink); border-color:var(--bone); }
+
+  .editable{ position:relative; }
+  .edit-hit{
+    position:absolute; inset:0; z-index:50; display:none; align-items:center; justify-content:center;
+    background:rgba(34,31,26,0.45); opacity:0; transition:opacity 0.2s ease;
+  }
+  body.studio-mode .edit-hit{ display:flex; cursor:pointer; }
+  body.studio-mode .editable:hover .edit-hit{ opacity:1; }
+  .edit-hit .edit-label{
+    color:var(--bone); font-size:12.5px; padding:9px 16px; border:1px solid rgba(248,244,236,0.5); border-radius:20px;
+    display:flex; align-items:center; gap:7px; pointer-events:none;
+  }
+  .edit-hit input[type="file"]{ position:absolute; inset:0; opacity:0; cursor:pointer; }
+
+  .studio-toast{
+    position:fixed; bottom:88px; left:50%; transform:translateX(-50%) translateY(10px); z-index:310;
+    background:var(--ink); color:var(--bone); font-size:13px; padding:11px 20px; border-radius:2px;
+    opacity:0; pointer-events:none; transition:opacity 0.3s ease, transform 0.3s ease;
+  }
+  .studio-toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 
   @media (max-width:960px){
     .wrap{ padding:0 24px; }
@@ -266,11 +333,13 @@
     .about-grid, .showroom-grid{ grid-template-columns:1fr; }
     .footer-grid{ grid-template-columns:1fr 1fr; row-gap:36px; }
     nav.primary{ display:none; }
+    .menu-toggle{ display:flex; }
   }
   @media (max-width:600px){
     .cat-grid, .prod-grid{ grid-template-columns:1fr; }
     section{ padding:80px 0; }
     .footer-grid{ grid-template-columns:1fr; }
+    .studio-bar{ flex-direction:column; align-items:flex-start; }
   }
 </style>
 </head>
@@ -290,13 +359,24 @@
       <button aria-label="Search"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg></button>
       <button aria-label="Account"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4.5 5-6 8-6s6.5 1.5 8 6"/></svg></button>
       <button aria-label="Wishlist"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 20s-7-4.5-9.3-9C1.2 7.8 3 4.5 6.5 4.5c2 0 3.3 1 5.5 3.2 2.2-2.2 3.5-3.2 5.5-3.2 3.5 0 5.3 3.3 3.8 6.5C19 15.5 12 20 12 20z"/></svg></button>
-      <button aria-label="Shopping bag, 2 items">
+      <button aria-label="Shopping bag" id="bagBtn">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 8h12l-1 12H7L6 8z"/><path d="M9 8V6a3 3 0 016 0v2"/></svg>
-        <span class="bag-count">2</span>
+        <span class="bag-count" id="bagCount">0</span>
+      </button>
+      <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
       </button>
     </div>
   </div>
 </header>
+
+<nav class="mobile-nav" id="mobileNav" aria-label="Mobile">
+  <a href="#shop">Shop</a>
+  <a href="#collections">Collections</a>
+  <a href="#craft">Craft</a>
+  <a href="#showroom">Showroom</a>
+  <a href="#journal">Journal</a>
+</nav>
 
 <main id="top">
   <section class="hero">
@@ -311,8 +391,8 @@
             <a href="#collections" class="btn btn-outline">Explore collections</a>
           </div>
         </div>
-        <div class="hero-visual" role="img" aria-label="Warm walnut wood surface with a line illustration of a lounge chair">
-          <svg viewBox="0 0 400 500" preserveAspectRatio="xMidYMid slice">
+        <div class="hero-visual editable" role="img" aria-label="Warm walnut wood surface with a line illustration of a lounge chair" data-img-key="img:hero">
+          <svg viewBox="0 0 400 500" preserveAspectRatio="xMidYMid slice" data-default-art>
             <g stroke="rgba(248,244,236,0.75)" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round">
               <path d="M110 330 v-90 a40 40 0 0 1 40-40 h100 a40 40 0 0 1 40 40 v90"/>
               <path d="M110 330 h180"/>
@@ -323,6 +403,11 @@
               <path d="M110 260 h180"/>
             </g>
           </svg>
+          <div class="edit-hit">
+            <label class="edit-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 16l4.5-6 4 5 3-4L20 16"/><rect x="3" y="4" width="18" height="16" rx="1"/></svg> Change photo
+              <input type="file" accept="image/*" data-upload-key="img:hero">
+            </label>
+          </div>
         </div>
       </div>
     </div>
@@ -336,61 +421,28 @@
 
   <section id="shop">
     <div class="wrap">
-      <div class="section-head">
+      <div class="section-head reveal">
         <h2>Shop by room</h2>
         <p>Eight collections, each built around how a space actually gets used.</p>
       </div>
-      <div class="cat-grid">
-        <a class="cat-card" href="#">
-          <span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.4"><path d="M3 13v5h18v-5"/><path d="M3 13a3 3 0 013-3h12a3 3 0 013 3"/><path d="M5 18v2M19 18v2"/></svg></span>
-          <h3>Sofas</h3><span class="arrow">View collection →</span>
-        </a>
-        <a class="cat-card" href="#">
-          <span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.4"><path d="M3 20v-7a3 3 0 013-3h12a3 3 0 013 3v7"/><path d="M3 15h18"/><path d="M6 20v2M18 20v2"/></svg></span>
-          <h3>Beds</h3><span class="arrow">View collection →</span>
-        </a>
-        <a class="cat-card" href="#">
-          <span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.4"><rect x="3" y="9" width="18" height="3"/><path d="M5 12v6M19 12v6"/></svg></span>
-          <h3>Dining sets</h3><span class="arrow">View collection →</span>
-        </a>
-        <a class="cat-card" href="#">
-          <span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.4"><rect x="4" y="14" width="16" height="3"/><path d="M7 17v3M17 17v3"/></svg></span>
-          <h3>Coffee tables</h3><span class="arrow">View collection →</span>
-        </a>
-        <a class="cat-card" href="#">
-          <span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.4"><rect x="5" y="3" width="14" height="18" rx="1"/><path d="M12 3v18"/></svg></span>
-          <h3>Wardrobes</h3><span class="arrow">View collection →</span>
-        </a>
-        <a class="cat-card" href="#">
-          <span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.4"><rect x="4" y="4" width="16" height="10" rx="1"/><path d="M9 20h6M12 14v6"/></svg></span>
-          <h3>Office</h3><span class="arrow">View collection →</span>
-        </a>
-        <a class="cat-card" href="#">
-          <span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.4"><path d="M4 21V9l8-6 8 6v12"/><path d="M4 21h16"/></svg></span>
-          <h3>Outdoor</h3><span class="arrow">View collection →</span>
-        </a>
-        <a class="cat-card" href="#">
-          <span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.4"><path d="M12 3l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5z"/></svg></span>
-          <h3>Custom furniture</h3><span class="arrow">View collection →</span>
-        </a>
-      </div>
+      <div class="cat-grid reveal reveal-stagger" id="catGrid"></div>
     </div>
   </section>
 
   <section id="collections">
     <div class="wrap">
-      <div class="section-head">
+      <div class="section-head reveal">
         <h2>New this season</h2>
         <p>A first look at pieces just landed in the workshop.</p>
       </div>
-      <div class="prod-grid" id="prodGrid"></div>
+      <div class="prod-grid reveal reveal-stagger" id="prodGrid"></div>
     </div>
   </section>
 
   <section class="about" id="craft">
     <div class="wrap about-grid">
-      <div class="about-panel" role="img" aria-label="Textured wood grain panel representing craftsmanship">
-        <svg viewBox="0 0 400 440" preserveAspectRatio="xMidYMid slice">
+      <div class="about-panel editable reveal" role="img" aria-label="Textured wood grain panel representing craftsmanship" data-img-key="img:about">
+        <svg viewBox="0 0 400 440" preserveAspectRatio="xMidYMid slice" data-default-art>
           <g stroke="rgba(248,244,236,0.5)" stroke-width="1" fill="none">
             <path d="M-20 60 C 100 40, 250 90, 420 55"/>
             <path d="M-20 120 C 120 100, 240 150, 420 115"/>
@@ -399,8 +451,13 @@
             <path d="M-20 350 C 100 330, 260 385, 420 345"/>
           </g>
         </svg>
+        <div class="edit-hit">
+          <label class="edit-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 16l4.5-6 4 5 3-4L20 16"/><rect x="3" y="4" width="18" height="16" rx="1"/></svg> Change photo
+            <input type="file" accept="image/*" data-upload-key="img:about">
+          </label>
+        </div>
       </div>
-      <div>
+      <div class="reveal">
         <h2>Every piece begins as a plank, not a drawing</h2>
         <p>We work with a small network of timber mills who kiln-dry, mill and hand-finish each piece in-house. No particle board, no veneers over MDF — joinery you can see, and wood that ages the way solid wood should.</p>
         <div class="stat-row">
@@ -414,7 +471,7 @@
 
   <section class="showroom" id="showroom">
     <div class="wrap showroom-grid">
-      <div>
+      <div class="reveal">
         <h2>See the grain before you buy</h2>
         <p>Sit on the pieces, feel the joinery, and talk finishes with the people who make them. Our showroom carries the full current collection.</p>
         <ul class="info-list">
@@ -424,8 +481,8 @@
         </ul>
         <a href="#" class="btn btn-outline">Plan a visit</a>
       </div>
-      <div class="showroom-visual" role="img" aria-label="Dim showroom interior with furniture silhouettes">
-        <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+      <div class="showroom-visual editable reveal" role="img" aria-label="Dim showroom interior with furniture silhouettes" data-img-key="img:showroom">
+        <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" data-default-art>
           <g stroke="rgba(248,244,236,0.55)" stroke-width="1.3" fill="none">
             <path d="M40 220 h90 v-70 h-90z"/>
             <path d="M40 220 h90"/>
@@ -433,6 +490,11 @@
             <path d="M300 150 v70 h50 v-70 a25 25 0 00-50 0z"/>
           </g>
         </svg>
+        <div class="edit-hit">
+          <label class="edit-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 16l4.5-6 4 5 3-4L20 16"/><rect x="3" y="4" width="18" height="16" rx="1"/></svg> Change photo
+            <input type="file" accept="image/*" data-upload-key="img:showroom">
+          </label>
+        </div>
       </div>
     </div>
   </section>
@@ -518,65 +580,154 @@
         <a href="#" aria-label="Instagram">Instagram</a>
         <a href="#" aria-label="Pinterest">Pinterest</a>
         <a href="#" aria-label="WhatsApp">WhatsApp</a>
+        <button class="studio-link" id="studioOpen" type="button">Studio access</button>
       </div>
     </div>
   </div>
 </footer>
 
+<div class="studio-bar" id="studioBar">
+  <div class="studio-msg"><b>Studio mode is on.</b> Hover any photo on the page and click to upload your own.</div>
+  <div class="studio-actions">
+    <button id="studioReset" type="button">Reset all photos</button>
+    <button class="exit-btn" id="studioExit" type="button">Exit studio mode</button>
+  </div>
+</div>
+<div class="studio-toast" id="studioToast"></div>
+
 <script>
+(function(){
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Header scroll state
+  /* ---------- Header scroll state ---------- */
   var header = document.getElementById('siteHeader');
   window.addEventListener('scroll', function(){
     header.classList.toggle('scrolled', window.scrollY > 40);
-  });
+  }, { passive: true });
 
-  // Product data (illustrated placeholders, not photos)
+  /* ---------- Mobile nav ---------- */
+  var menuToggle = document.getElementById('menuToggle');
+  var mobileNav = document.getElementById('mobileNav');
+  function closeMobileNav(){
+    menuToggle.classList.remove('open');
+    menuToggle.setAttribute('aria-expanded', 'false');
+    mobileNav.classList.remove('open');
+    document.body.classList.remove('no-scroll');
+  }
+  menuToggle.addEventListener('click', function(){
+    var willOpen = !mobileNav.classList.contains('open');
+    menuToggle.classList.toggle('open', willOpen);
+    menuToggle.setAttribute('aria-expanded', String(willOpen));
+    mobileNav.classList.toggle('open', willOpen);
+    document.body.classList.toggle('no-scroll', willOpen);
+  });
+  mobileNav.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', closeMobileNav); });
+
+  /* ---------- Product + category data ---------- */
+  var categories = [
+    { slug:'sofas', name:'Sofas', icon:'<path d="M3 13v5h18v-5"/><path d="M3 13a3 3 0 013-3h12a3 3 0 013 3"/><path d="M5 18v2M19 18v2"/>' },
+    { slug:'beds', name:'Beds', icon:'<path d="M3 20v-7a3 3 0 013-3h12a3 3 0 013 3v7"/><path d="M3 15h18"/><path d="M6 20v2M18 20v2"/>' },
+    { slug:'dining', name:'Dining sets', icon:'<rect x="3" y="9" width="18" height="3"/><path d="M5 12v6M19 12v6"/>' },
+    { slug:'coffee', name:'Coffee tables', icon:'<rect x="4" y="14" width="16" height="3"/><path d="M7 17v3M17 17v3"/>' },
+    { slug:'wardrobes', name:'Wardrobes', icon:'<rect x="5" y="3" width="14" height="18" rx="1"/><path d="M12 3v18"/>' },
+    { slug:'office', name:'Office', icon:'<rect x="4" y="4" width="16" height="10" rx="1"/><path d="M9 20h6M12 14v6"/>' },
+    { slug:'outdoor', name:'Outdoor', icon:'<path d="M4 21V9l8-6 8 6v12"/><path d="M4 21h16"/>' },
+    { slug:'custom', name:'Custom furniture', icon:'<path d="M12 3l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5z"/>' }
+  ];
+
   var products = [
-    { name:'Amani lounge sofa', cat:'Sofas', price:'KSh 148,000', was:'KSh 172,000', badge:'-14%', rating:5,
+    { slug:'amani-sofa', name:'Amani lounge sofa', cat:'Sofas', price:'KSh 148,000', was:'KSh 172,000', badge:'-14%', rating:5,
       icon:'<path d="M20 70 v-25 a12 12 0 0112-12 h56 a12 12 0 0112 12 v25"/><path d="M20 70 h80"/><path d="M14 70 v20"/><path d="M106 70 v20"/><path d="M20 45 h80"/>' },
-    { name:'Kilima bed frame', cat:'Beds', price:'KSh 96,500', was:null, badge:'New', rating:4,
+    { slug:'kilima-bed', name:'Kilima bed frame', cat:'Beds', price:'KSh 96,500', was:null, badge:'New', rating:4,
       icon:'<path d="M14 78 v-24 a10 10 0 0110-10 h72 a10 10 0 0110 10 v24"/><path d="M14 62 h96"/><path d="M22 78 v10M98 78 v10"/><path d="M14 44 v-8 h20 v8"/>' },
-    { name:'Mesa dining table', cat:'Dining', price:'KSh 84,000', was:null, badge:null, rating:5,
+    { slug:'mesa-table', name:'Mesa dining table', cat:'Dining', price:'KSh 84,000', was:null, badge:null, rating:5,
       icon:'<rect x="14" y="40" width="92" height="10"/><path d="M24 50 v28M96 50 v28"/>' },
-    { name:'Juba coffee table', cat:'Living', price:'KSh 38,500', was:'KSh 45,000', badge:'-15%', rating:4,
+    { slug:'juba-coffee', name:'Juba coffee table', cat:'Living', price:'KSh 38,500', was:'KSh 45,000', badge:'-15%', rating:4,
       icon:'<rect x="24" y="52" width="72" height="9"/><path d="M32 61 v18M88 61 v18"/>' }
   ];
+
+  /* ---------- Build category grid ---------- */
+  var catGrid = document.getElementById('catGrid');
+  categories.forEach(function(c, i){
+    var card = document.createElement('a');
+    card.className = 'cat-card editable';
+    card.href = '#';
+    card.style.setProperty('--i', i);
+    card.dataset.imgKey = 'img:cat:' + c.slug;
+    card.innerHTML =
+      '<div class="cat-bg" data-bg></div>' +
+      '<span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.4">' + c.icon + '</svg></span>' +
+      '<h3>' + c.name + '</h3><span class="arrow">View collection →</span>' +
+      '<div class="edit-hit"><label class="edit-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 16l4.5-6 4 5 3-4L20 16"/><rect x="3" y="4" width="18" height="16" rx="1"/></svg> Change photo' +
+      '<input type="file" accept="image/*" data-upload-key="img:cat:' + c.slug + '"></label></div>';
+    card.addEventListener('click', function(e){
+      if (document.body.classList.contains('studio-mode') || e.target.closest('.edit-hit')) e.preventDefault();
+    });
+    catGrid.appendChild(card);
+  });
+
+  /* ---------- Build product grid ---------- */
   var grid = document.getElementById('prodGrid');
-  products.forEach(function(p, i){
+  var bagCount = 0;
+  var bagCountEl = document.getElementById('bagCount');
+
+  function starRow(rating){
     var stars = '';
     for (var s=0; s<5; s++){
-      stars += '<svg viewBox="0 0 20 20"><polygon points="10,1 12.6,7 19,7.5 14,11.8 15.5,18 10,14.5 4.5,18 6,11.8 1,7.5 7.4,7"' + (s < p.rating ? '' : ' fill-opacity="0.25"') + '/></svg>';
+      stars += '<svg viewBox="0 0 20 20"><polygon points="10,1 12.6,7 19,7.5 14,11.8 15.5,18 10,14.5 4.5,18 6,11.8 1,7.5 7.4,7"' + (s < rating ? '' : ' fill-opacity="0.25"') + '/></svg>';
     }
+    return stars;
+  }
+
+  products.forEach(function(p, i){
     var card = document.createElement('div');
-    card.className = 'prod-card';
+    card.className = 'prod-card reveal';
+    card.style.transitionDelay = (i * 60) + 'ms';
     card.innerHTML =
-      '<div class="prod-media">' +
+      '<div class="prod-media editable" data-img-key="img:product:' + p.slug + '">' +
         (p.badge ? '<span class="badge">' + p.badge + '</span>' : '') +
         '<button class="wish" aria-label="Add ' + p.name + ' to wishlist" data-wish>' +
           '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#221F1A" stroke-width="1.6"><path d="M12 20s-7-4.5-9.3-9C1.2 7.8 3 4.5 6.5 4.5c2 0 3.3 1 5.5 3.2 2.2-2.2 3.5-3.2 5.5-3.2 3.5 0 5.3 3.3 3.8 6.5C19 15.5 12 20 12 20z"/></svg>' +
         '</button>' +
-        '<svg viewBox="0 0 120 100" preserveAspectRatio="xMidYMid meet"><g stroke="rgba(34,31,26,0.6)" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round">' + p.icon + '</g></svg>' +
-        '<div class="quick-view">Quick view</div>' +
+        '<svg viewBox="0 0 120 100" preserveAspectRatio="xMidYMid meet" data-default-art><g stroke="rgba(34,31,26,0.6)" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round">' + p.icon + '</g></svg>' +
+        '<div class="quick-view" data-quick-view>Quick view</div>' +
+        '<div class="edit-hit"><label class="edit-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 16l4.5-6 4 5 3-4L20 16"/><rect x="3" y="4" width="18" height="16" rx="1"/></svg> Change photo' +
+        '<input type="file" accept="image/*" data-upload-key="img:product:' + p.slug + '"></label></div>' +
       '</div>' +
       '<div class="prod-cat">' + p.cat + '</div>' +
       '<div class="prod-name">' + p.name + '</div>' +
       '<div class="prod-bottom">' +
         '<div class="prod-price">' + (p.was ? '<span class="was">' + p.was + '</span>' : '') + p.price + '</div>' +
-        '<div class="rating">' + stars + '</div>' +
+        '<div class="rating">' + starRow(p.rating) + '</div>' +
       '</div>' +
-      '<button class="add-cart">Add to cart</button>';
+      '<button class="add-cart" data-name="' + p.name + '">Add to cart</button>';
     grid.appendChild(card);
   });
 
-  // Wishlist toggle
+  /* ---------- Wishlist toggle ---------- */
   grid.addEventListener('click', function(e){
-    var btn = e.target.closest('[data-wish]');
-    if (btn) btn.classList.toggle('active');
+    var wishBtn = e.target.closest('[data-wish]');
+    if (wishBtn){ wishBtn.classList.toggle('active'); return; }
+
+    var addBtn = e.target.closest('.add-cart');
+    if (addBtn){
+      bagCount += 1;
+      bagCountEl.textContent = bagCount;
+      bagCountEl.classList.add('bump');
+      setTimeout(function(){ bagCountEl.classList.remove('bump'); }, 250);
+      var original = addBtn.textContent;
+      addBtn.textContent = 'Added ✓';
+      addBtn.classList.add('added');
+      setTimeout(function(){ addBtn.textContent = original; addBtn.classList.remove('added'); }, 1600);
+      showToast(addBtn.dataset.name + ' added to your bag');
+      return;
+    }
+
+    var qv = e.target.closest('[data-quick-view]');
+    if (qv){ showToast('Quick view coming soon'); }
   });
 
-  // Stat counters (animate once in view)
+  /* ---------- Stat counters (animate once in view) ---------- */
   var counted = false;
   function animateStats(){
     if (counted) return;
@@ -588,7 +739,7 @@
     document.querySelectorAll('.stat .num').forEach(function(el){
       var target = parseInt(el.getAttribute('data-count'), 10);
       if (reduceMotion){ el.textContent = target.toLocaleString(); return; }
-      var start = 0, duration = 1100, startTime = null;
+      var duration = 1100, startTime = null;
       function step(ts){
         if (!startTime) startTime = ts;
         var progress = Math.min((ts - startTime) / duration, 1);
@@ -598,10 +749,26 @@
       requestAnimationFrame(step);
     });
   }
-  window.addEventListener('scroll', animateStats);
+  window.addEventListener('scroll', animateStats, { passive: true });
   animateStats();
 
-  // Review carousel
+  /* ---------- Scroll reveal ---------- */
+  var revealTargets = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window && !reduceMotion){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting){
+          entry.target.classList.add('in');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+    revealTargets.forEach(function(el){ io.observe(el); });
+  } else {
+    revealTargets.forEach(function(el){ el.classList.add('in'); });
+  }
+
+  /* ---------- Review carousel ---------- */
   var slides = document.querySelectorAll('.review-slide');
   var dotsWrap = document.getElementById('reviewDots');
   var current = 0, reviewTimer;
@@ -627,18 +794,159 @@
   }
   resetTimer();
 
-  // Newsletter form
-  document.getElementById('newsForm').addEventListener('submit', function(e){
+  /* ---------- Newsletter form ---------- */
+  var newsForm = document.getElementById('newsForm');
+  newsForm.addEventListener('submit', function(e){
     e.preventDefault();
     var email = document.getElementById('newsEmail').value;
-    if (!email || !email.includes('@')){
-      document.getElementById('newsNote').textContent = 'Enter a valid email to subscribe.';
+    var note = document.getElementById('newsNote');
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+      note.textContent = 'Enter a valid email to subscribe.';
+      note.classList.add('error');
+      newsForm.classList.add('error');
       return;
     }
-    document.getElementById('newsNote').style.display = 'none';
+    note.classList.remove('error');
+    newsForm.classList.remove('error');
+    newsForm.style.display = 'none';
+    note.style.display = 'none';
     document.getElementById('newsSuccess').style.display = 'block';
-    document.getElementById('newsForm').reset();
   });
+
+  /* ---------- Toast ---------- */
+  var toastEl = document.getElementById('studioToast');
+  var toastTimer;
+  function showToast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove('show'); }, 2400);
+  }
+
+  /* =========================================================
+     STUDIO MODE — admin photo uploads, persisted via
+     window.storage so every visitor sees the same photos.
+     ========================================================= */
+  var STUDIO_PIN = '2026';
+  var studioBar = document.getElementById('studioBar');
+  var studioOpen = document.getElementById('studioOpen');
+  var studioExit = document.getElementById('studioExit');
+  var studioReset = document.getElementById('studioReset');
+  var hasStorage = !!(window.storage && typeof window.storage.set === 'function');
+
+  function setStudioMode(on){
+    document.body.classList.toggle('studio-mode', on);
+    studioBar.classList.toggle('open', on);
+  }
+
+  studioOpen.addEventListener('click', function(){
+    if (!hasStorage){
+      showToast('Photo storage is not available in this preview.');
+      return;
+    }
+    var pin = window.prompt('Enter the studio PIN to edit photos:');
+    if (pin === null) return;
+    if (pin.trim() === STUDIO_PIN){
+      setStudioMode(true);
+      showToast('Studio mode on — click any photo to replace it.');
+    } else {
+      showToast('That PIN did not match.');
+    }
+  });
+  studioExit.addEventListener('click', function(){ setStudioMode(false); });
+
+  function applyImage(key, dataUrl){
+    var target = document.querySelector('[data-img-key="' + key + '"]');
+    if (!target) return;
+    if (target.classList.contains('cat-card')){
+      var bg = target.querySelector('[data-bg]');
+      if (bg){ bg.style.backgroundImage = 'url(' + dataUrl + ')'; }
+      target.classList.add('has-photo');
+      return;
+    }
+    var art = target.querySelector('[data-default-art]');
+    var existingImg = target.querySelector('img[data-uploaded]');
+    if (!existingImg){
+      existingImg = document.createElement('img');
+      existingImg.setAttribute('data-uploaded', '1');
+      existingImg.alt = '';
+      target.insertBefore(existingImg, target.querySelector('.edit-hit') || null);
+    }
+    existingImg.src = dataUrl;
+    if (art) art.style.opacity = '0';
+  }
+
+  function clearImage(key){
+    var target = document.querySelector('[data-img-key="' + key + '"]');
+    if (!target) return;
+    if (target.classList.contains('cat-card')){
+      var bg = target.querySelector('[data-bg]');
+      if (bg) bg.style.backgroundImage = '';
+      target.classList.remove('has-photo');
+      return;
+    }
+    var img = target.querySelector('img[data-uploaded]');
+    if (img) img.remove();
+    var art = target.querySelector('[data-default-art]');
+    if (art) art.style.opacity = '1';
+  }
+
+  function readFileAsDataUrl(file){
+    return new Promise(function(resolve, reject){
+      var reader = new FileReader();
+      reader.onload = function(){ resolve(reader.result); };
+      reader.onerror = function(){ reject(new Error('Could not read file')); };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  document.addEventListener('change', function(e){
+    var input = e.target.closest('input[data-upload-key]');
+    if (!input || !input.files || !input.files[0]) return;
+    var key = input.dataset.uploadKey;
+    var file = input.files[0];
+    if (file.size > 4.5 * 1024 * 1024){
+      showToast('Please choose an image under 4.5MB.');
+      input.value = '';
+      return;
+    }
+    readFileAsDataUrl(file).then(function(dataUrl){
+      applyImage(key, dataUrl);
+      return window.storage.set(key, dataUrl, true);
+    }).then(function(result){
+      if (!result){ showToast('Could not save that photo — try again.'); return; }
+      showToast('Photo saved for every visitor.');
+    }).catch(function(){
+      showToast('Something went wrong saving that photo.');
+    });
+    input.value = '';
+  });
+
+  studioReset.addEventListener('click', function(){
+    if (!window.confirm('Remove all uploaded photos and restore the default artwork?')) return;
+    var keys = document.querySelectorAll('[data-img-key]');
+    var jobs = [];
+    keys.forEach(function(el){
+      var key = el.dataset.imgKey;
+      clearImage(key);
+      jobs.push(window.storage.delete(key, true).catch(function(){}));
+    });
+    Promise.all(jobs).then(function(){ showToast('Photos reset to default artwork.'); });
+  });
+
+  /* Load any previously saved photos on page load */
+  function loadSavedImages(){
+    if (!hasStorage) return;
+    var keys = [];
+    document.querySelectorAll('[data-img-key]').forEach(function(el){ keys.push(el.dataset.imgKey); });
+    keys.forEach(function(key){
+      window.storage.get(key, true).then(function(result){
+        if (result && result.value) applyImage(key, result.value);
+      }).catch(function(){ /* no saved photo for this spot yet */ });
+    });
+  }
+  loadSavedImages();
+})();
 </script>
 </body>
 </html>
